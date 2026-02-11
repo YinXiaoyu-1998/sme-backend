@@ -1,0 +1,63 @@
+// 1. Prisma datasource (PostgreSQL)
+datasource db {
+  provider = "postgresql"
+}
+
+// 2. Prisma Client generator
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// 3. Data models
+// ==========================================
+
+// File registry: store uploaded file metadata
+model DataFile {
+  id           String   @id @default(uuid()) // Auto-generated unique ID
+
+  // Original filename shown to users (e.g., "2024Q1-sales.xlsx")
+  originalName String
+
+  // Stored filename to avoid collisions (e.g., "1706601234-2024Q1-sales.xlsx")
+  filename     String   @unique
+
+  // Absolute path on disk (e.g., "/app/uploads/...")
+  path         String
+
+  // MIME type (e.g., "application/pdf")
+  mimeType     String
+
+  // File size in bytes
+  size         Int
+
+  // Processing status:
+  // - PENDING: just uploaded, not processed
+  // - PROCESSED: processed and ready
+  // - ERROR: processing failed
+  status       String   @default("PENDING")
+
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // 新增：一个文件可以对应多条聊天记录
+  messages  Message[]
+}
+
+
+// Message model
+model Message {
+  id        String   @id @default(uuid())
+  content   String   // Message content
+  role      String   // Sender role: "user" or "ai"
+  createdAt DateTime @default(now())
+
+  // Optional chat/session identifier
+  chatId    String?
+
+  // Optional relation to a file
+  fileId    String?
+  file      DataFile?    @relation(fields: [fileId], references: [id])
+}
+
