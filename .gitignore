@@ -1,5 +1,22 @@
-node_modules
-# Keep environment variables out of version control
-.env
+# Dependencies
+node_modules/
 
+# Environment
+.env
+.env.*
+
+# Build outputs
+dist/
+coverage/
+*.tsbuildinfo
+
+# Prisma generated
 /generated/prisma
+
+# Uploads
+uploads/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
