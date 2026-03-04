@@ -14,22 +14,28 @@ export class DatabrainService {
     this.baseUrl = envUrl;
   }
 
-  async loadFile(filepath: string, mimeType: string) {
+  async loadFile(fileId: string, filepath: string, mimeType: string) {
     const url = new URL('/context/load', this.baseUrl).toString();
     await firstValueFrom(
       this.httpService.post(url, {
+        fileId,
         filepath,
         mimeType,
       }),
     );
   }
 
-  async aiChat(message: string) {
+  async aiChat(params: {
+    userId: string;
+    message: string;
+    fileId?: string;
+    topK?: number;
+    topNFiles?: number;
+    history?: Array<{ role: string; content: string }>;
+  }) {
     const url = new URL('/chat', this.baseUrl).toString();
     const response = await firstValueFrom(
-      this.httpService.post(url, {
-        message,
-      }),
+      this.httpService.post(url, params),
     );
     return response.data;
   }

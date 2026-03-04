@@ -23,6 +23,7 @@ model DataFile {
   filename     String   @unique
 
   // Absolute path on disk (e.g., "/app/uploads/...")
+  // Could be improved to path to S3 buckets in the future?
   path         String
 
   // MIME type (e.g., "application/pdf")
@@ -41,8 +42,11 @@ model DataFile {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // 新增：一个文件可以对应多条聊天记录
+  userId       String   // File owner (required)
+
+  // Obsolete, not used
   messages  Message[]
+  document  Document?
 }
 
 
@@ -53,11 +57,157 @@ model Message {
   role      String   // Sender role: "user" or "ai"
   createdAt DateTime @default(now())
 
+  userId    String   // Message owner (required)
+
   // Optional chat/session identifier
   chatId    String?
 
   // Optional relation to a file
   fileId    String?
   file      DataFile?    @relation(fields: [fileId], references: [id])
+
+  generatedFiles GeneratedFile[]
+}
+
+model GeneratedFile {
+  id        String   @id @default(uuid())
+  messageId String?
+  chatId    String?
+  userId    String
+  fileType  String
+  mimeType  String
+  filename  String
+  path      String
+  url       String?
+  size      Int      @default(0)
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  message   Message? @relation(fields: [messageId], references: [id])
+
+  @@index([messageId])
+  @@index([chatId])
+  @@index([userId])
+}
+
+model SheetMeta {
+  id           String   @id @default(uuid())
+  fileId       String
+  documentId   String
+  userId       String
+  sheetName    String
+  columns      Json
+  columnTypes  Json?
+  rowCount     Int      @default(0)
+  sampleValues Json?
+  createdAt    DateTime @default(now())
+
+  @@index([fileId])
+  @@index([documentId])
+  @@index([userId])
+}
+
+model SheetRow {
+  id          String   @id @default(uuid())
+  fileId      String
+  documentId  String
+  userId      String
+  sheetName   String
+  rowIndex    Int
+  data        Json
+  createdAt   DateTime @default(now())
+
+  @@index([fileId, sheetName])
+  @@index([documentId])
+  @@index([userId, sheetName])
+}
+
+model Document {
+  id             String            @id @default(uuid())
+  fileId         String            @unique
+  contentHash    String
+  status         String            @default("PENDING")
+  mimeType       String
+  chunkCount     Int               @default(0)
+  processedAt    DateTime?
+  errorMessage   String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  file           DataFile          @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  chunks         Chunk[]
+  ingestionRuns  RAGIngestionRun[]
+
+  @@index([status])
+  @@index([updatedAt])
+}
+
+model Chunk {
+  id          String      @id @default(uuid())
+  documentId  String
+  chunkIndex  Int
+  content     String      @db.Text
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+
+  document    Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  embedding   Embedding?
+
+  @@unique([documentId, chunkIndex])
+  @@index([documentId])
+}
+
+model Embedding {
+  id          String                     @id @default(uuid())
+  chunkId     String                     @unique
+  vector      Unsupported("vector(384)")
+  model       String
+  createdAt   DateTime                   @default(now())
+
+  chunk       Chunk                      @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+}
+
+model RAGIngestionRun {
+  id            String      @id @default(uuid())
+  documentId    String?
+  fileId        String
+  status        String      @default("PENDING")
+  chunksIndexed Int         @default(0)
+  durationMs    Int?
+  errorMessage  String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  completedAt   DateTime?
+
+  document      Document?   @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([fileId, createdAt])
+  @@index([status])
+}
+
+// User accounts
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  name         String?
+  passwordHash String
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  sessions     UserSession[]
+}
+
+// User sessions
+model UserSession {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
 }
 

@@ -1,0 +1,15 @@
+---
+description: Require README updates for API controller changes
+alwaysApply: true
+---
+
+# API README Updates
+
+Whenever you add or modify an API, add or update a `README.md` in that API controller's directory.
+
+The README must include:
+- Concise description about the API's purpose.
+- Request and response schema for each API in the controller
+- Example `curl` commands for every API in the controller
+
+If no `README.md` exists, create one in the controller folder. If one exists, update it to cover the new or changed APIs.
