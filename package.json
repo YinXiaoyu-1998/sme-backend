@@ -27,9 +27,12 @@
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "axios": "^1.13.4",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
     "pg": "^8.14.1",
+    "redis": "^5.11.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
@@ -39,8 +42,10 @@
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^1.4.13",
     "@types/node": "^22.10.7",
     "@types/pg": "^8.11.10",
@@ -67,6 +72,16 @@
       "json",
       "ts"
     ],
+    "moduleNameMapper": {
+      "^@app/(.*)$": "<rootDir>/$1",
+      "^@chat/(.*)$": "<rootDir>/chat/$1",
+      "^@common/(.*)$": "<rootDir>/common/$1",
+      "^@databrain/(.*)$": "<rootDir>/databrain/$1",
+      "^@files/(.*)$": "<rootDir>/files/$1",
+      "^@prisma/(.*)$": "<rootDir>/prisma/$1",
+      "^@redis/(.*)$": "<rootDir>/redis/$1",
+      "^@user/(.*)$": "<rootDir>/user/$1"
+    },
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {

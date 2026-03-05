@@ -14,6 +14,16 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@app/*": ["src/*"],
+      "@chat/*": ["src/chat/*"],
+      "@common/*": ["src/common/*"],
+      "@databrain/*": ["src/databrain/*"],
+      "@files/*": ["src/files/*"],
+      "@prisma/*": ["src/prisma/*"],
+      "@redis/*": ["src/redis/*"],
+      "@user/*": ["src/user/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,

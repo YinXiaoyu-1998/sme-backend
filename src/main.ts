@@ -1,6 +1,9 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from '@app/app.module';
+import cookieParser from 'cookie-parser';
+import { join } from 'node:path';
+import express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,7 +19,13 @@ async function bootstrap() {
     origin: corsOrigins.length > 0 ? corsOrigins : undefined,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
   });
+
+  app.use(cookieParser());
+
+  const generatedDir = join(process.cwd(), 'generats');
+  app.use('/generated', express.static(generatedDir));
 
   await app.listen(process.env.PORT ?? 3000);
 }

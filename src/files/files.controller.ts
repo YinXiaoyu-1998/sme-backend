@@ -1,8 +1,9 @@
-import { BadRequestException, Controller, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import type { Request } from 'express';
-import { FilesService } from './files.service';
+import { FilesService } from '@files/files.service';
+import type { ListFilesResponse, UploadFilesResponse } from '@files/dto/files.responses';
 
 @Controller('files')
 export class FilesController {
@@ -39,12 +40,27 @@ export class FilesController {
       },
     }),
   )
-  async uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
+  async uploadFiles(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body('userId') userId: string,
+  ): Promise<UploadFilesResponse> {
     if (!files || files.length === 0) {
       throw new BadRequestException('At least one file is required');
     }
+    if (!userId?.trim()) {
+      throw new BadRequestException('userId is required');
+    }
 
-    return this.filesService.saveFilesToLocal(files);
+    return this.filesService.saveFilesToLocal(files, userId);
+  }
+
+  @Get('list')
+  async listFiles(@Query('userId') userId: string): Promise<ListFilesResponse> {
+    if (!userId?.trim()) {
+      throw new BadRequestException('userId is required');
+    }
+
+    return this.filesService.listFilesByUserId(userId);
   }
 
   private static getMaxFileSizeBytes(): number {
